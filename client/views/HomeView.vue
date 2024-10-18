@@ -8,7 +8,7 @@ import CreateGroupForm from "@/components/Group/CreateGroupForm.vue";
 import GroupListComponent from "@/components/Group/GroupListComponent.vue";
 import GroupDropdown from "@/components/Group/GroupDropdown.vue";
 
-const { currentUsername, isLoggedIn } = storeToRefs(useUserStore());
+const { isLoggedIn } = storeToRefs(useUserStore());
 
 const activeTab = ref("Browse");
 const changeTab = (tab: string) => activeTab.value = tab;
@@ -28,6 +28,9 @@ const navigate = () => {
       <section class="sidebar">
         <Suspense>
           <GroupDropdown group-type="community" @create-new="setCreating(true)"></GroupDropdown>
+          <template #fallback>
+            <p class="centered">Loading...</p>
+          </template>
         </Suspense>
         <button :class="['sidebar-btn', { active: activeTab == 'Browse' }]" @click="changeTab('Browse')">Browse</button>
         <button :class="['sidebar-btn', { active: activeTab == 'Dashboard' }]" @click="changeTab('Dashboard')">Dashboard</button>
@@ -37,7 +40,7 @@ const navigate = () => {
         <Suspense v-if="activeTab == 'Browse'" >
           <GroupListComponent group-type="community"/>
           <template #fallback>
-            <p>Content is being loaded...</p>
+            <p class="centered">Content is being loaded...</p>
           </template>
         </Suspense>
         <div v-else-if="activeTab == 'Dashboard'">
@@ -80,7 +83,7 @@ h1 {
   overflow-y: scroll;
 }
 
-.main-content::-webkit-scrollbar {
+.paneled .content::-webkit-scrollbar {
   display: none;
 }
 

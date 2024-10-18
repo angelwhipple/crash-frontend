@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { useUserStore } from "@/stores/user";
 import { useGroupStore } from "@/stores/group";
+import { useUserStore } from "@/stores/user";
 import { ref, defineProps, defineEmits } from "vue";
 
 const props = defineProps(["groupType"]);
-const emit = defineEmits(["cancelCreate", "newGroup"]);
+const emit = defineEmits(["cancelCreate"]);
 
-const { createGroup } = useGroupStore();
+const groupStore = useGroupStore();
+const userStore = useUserStore();
 
 const name = ref("");
 const capacity = ref(0);
@@ -18,12 +19,9 @@ const cancelCreate = () => {
 };
 
 const handleCreate = async () => {
-  console.log(isPrivate.value);
-  const response = await createGroup(name.value, isPrivate.value.toString(), capacity.value);
-  console.log(response);
-  emit("newGroup");
+  await groupStore.createGroup(name.value, isPrivate.value.toString(), capacity.value);
+  await userStore.updateSession();
 }
-
 </script>
 
 <template>

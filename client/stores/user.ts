@@ -2,27 +2,23 @@ import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 
 import { fetchy } from "@/utils/fetchy";
+import { UserDoc } from "../../server/concepts/authenticating";
 
 export const useUserStore = defineStore(
   "user",
   () => {
-    const currentUsername = ref("");
-    const subscribedGroups = ref([]);
+    const currentUser = ref<UserDoc>();
 
-    const isLoggedIn = computed(() => currentUsername.value !== "");
+    const isLoggedIn = computed(() => currentUser.value !== undefined);
 
     const resetStore = () => {
-      currentUsername.value = "";
+      currentUser.value = undefined;
     };
 
     const createUser = async (email: string, username: string, password: string) => {
       await fetchy("/api/users", "POST", {
         body: { email, username, password },
       });
-    };
-
-    const fetchSessionUser = async () => {
-      return await fetchy(`/api/session`, "GET", {});
     };
 
     const fetchUserByEmail = async (email: string) => {
@@ -37,12 +33,9 @@ export const useUserStore = defineStore(
 
     const updateSession = async () => {
       try {
-        const { username, groups } = await fetchy("/api/session", "GET", { alert: false });
-        currentUsername.value = username;
-        subscribedGroups.value = groups;
+        currentUser.value = await fetchy("/api/session", "GET", { alert: false });
       } catch {
-        currentUsername.value = "";
-        subscribedGroups.value = [];
+        currentUser.value = undefined;
       }
     };
 
@@ -65,10 +58,9 @@ export const useUserStore = defineStore(
     };
 
     return {
-      currentUsername,
+      currentUser,
       isLoggedIn,
       createUser,
-      fetchSessionUser,
       fetchUserByEmail,
       loginUser,
       updateSession,

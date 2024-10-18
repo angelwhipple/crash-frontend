@@ -34,26 +34,28 @@ export default class GroupingConcept {
     return { msg: `Renamed group: ${name}`, group: await this.groups.readOne({ _id }) };
   }
 
-  async addMember(_id: ObjectId, member: ObjectId) {
-    await this.assertGroupExists(_id);
-    await this.groups.extendArray({ _id }, { members: member });
-    return { msg: `Added user ${member} to group ${_id}` };
+  async addMember(_id: ObjectId, user: ObjectId) {
+    await this.assertUserNotMember(_id, user);
+    await this.groups.extendArray({ _id }, { members: user });
+    return { msg: `Added user ${user} to group ${_id}` };
   }
 
-  async addManyMembers(_id: ObjectId, user: ObjectId, members: ObjectId[]) {
-    await this.assertOwnerIsUser(_id, user); // Only group owners can bulk add members
-    await this.groups.extendArray({ _id }, { members: { $each: members } });
+  async addManyMembers(_id: ObjectId, owner: ObjectId, users: ObjectId[]) {
+    await this.assertOwnerIsUser(_id, owner); // Only group owners can bulk add members
+    await Promise.all(users.map(user => this.assertUserNotMember(_id, user)));
+    await this.groups.extendArray({ _id }, { members: { $each: users } });
     return { msg: `Added new users to group ${_id}` };
   }
 
-  async removeMember(_id: ObjectId, member: ObjectId) {
-    await this.assertGroupExists(_id) // Anyone can leave a group, no ownership check
-    await this.groups.pullFromArray({ _id }, { members: member });
-    return { msg: `Removed user ${member} from group ${_id}` };
+  async removeMember(_id: ObjectId, user: ObjectId) {
+    await this.assertUserIsMember(_id, user); // Anyone can leave a group, no ownership check
+    await this.groups.pullFromArray({ _id }, { members: user });
+    return { msg: `Removed user ${user} from group ${_id}` };
   }
 
-  async removeManyMembers(_id: ObjectId, user: ObjectId, members: ObjectId[]) {
-    await this.assertOwnerIsUser(_id, user); // Only group owners can bulk remove members
+  async removeManyMembers(_id: ObjectId, owner: ObjectId, members: ObjectId[]) {
+    await this.assertOwnerIsUser(_id, owner); // Only group owners can bulk remove members
+    await Promise.all(members.map(member => this.assertUserIsMember(_id, member)));
     await Promise.all(members.map(member => this.groups.pullFromArray({ _id }, { members: member })));
     return { msg: `Removed multiple users from group ${_id}` };
   }
@@ -89,6 +91,20 @@ export default class GroupingConcept {
     const group = await this.assertGroupExists(_id);
     if (group.owner.toString() !== user.toString()) {
       throw new NotAllowedError(`User ${user} is not the owner of group ${_id}!`);
+    }
+  }
+
+  async assertUserIsMember(_id: ObjectId, user: ObjectId) {
+    const group = await this.assertGroupExists(_id);
+    if (group.members.every(member => member.toString() !== user.toString())) {
+      throw new NotAllowedError(`User ${user} is a member of group ${_id}!`);
+    }
+  }
+
+  async assertUserNotMember(_id: ObjectId, user: ObjectId) {
+    const group = await this.assertGroupExists(_id);
+    if (group.members.some(member => member.toString() === user.toString())) {
+      throw new NotAllowedError(`User ${user} is already a member of group ${_id}!`);
     }
   }
 

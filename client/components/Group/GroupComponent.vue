@@ -2,33 +2,40 @@
 import { computed, ref, defineProps, defineEmits } from "vue";
 import { useGroupStore } from "@/stores/group";
 import { useUserStore } from "@/stores/user";
-import { ObjectId } from "mongodb";
+import { storeToRefs } from "pinia";
 
-const props = defineProps(["id"]);
-const { loadGroup, joinGroup, leaveGroup } = useGroupStore();
-const { fetchSessionUser } = useUserStore();
+const props = defineProps(["group", "groupType"]);
+const groupStore = useGroupStore();
+const userStore = useUserStore();
+const { currentUser } = storeToRefs(userStore);
 
-const group = ref(await loadGroup(props.id));
-const currentUser = await fetchSessionUser();
+const group = ref(props.group);
 
 const refreshGroup = async () => {
-  group.value = await loadGroup(props.id);
+  group.value = await groupStore.loadGroup(props.group._id);
 }
 
-const isOwner = computed(() => currentUser._id.toString() === group.value.owner.toString());
-
+const isOwner = computed(() => currentUser.value!._id.toString() === group.value.owner.toString());
 const isMember = computed(() => {
-  return group.value.members.some((member: string) => member.toString() === currentUser._id.toString());
+  return group.value.members.some((member: string) => member.toString() === currentUser.value!._id.toString());
 });
 
 const join = async () => {
-  await joinGroup(props.id, currentUser._id);
+  await groupStore.joinGroup(group.value._id, currentUser.value!._id);
   await refreshGroup();
+  await userStore.updateSession();
 }
 
 const leave = async () => {
-  await leaveGroup(props.id, currentUser._id);
+  await groupStore.leaveGroup(group.value._id, currentUser.value!._id);
   await refreshGroup();
+  await userStore.updateSession();
+}
+
+const disband = async () => {
+  await groupStore.deleteGroup(group.value._id);
+  await refreshGroup();
+  await userStore.updateSession();
 }
 </script>
 
@@ -39,7 +46,7 @@ const leave = async () => {
     <div class="actions">
       <button v-if="isMember" @click="leave()">Leave group</button>
       <button v-else @click="join()">Join group</button>
-      <button v-if="isOwner">Delete</button>
+      <button v-if="isOwner" @click="disband()">Disband</button>
     </div>
   </div>
 </template>

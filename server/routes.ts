@@ -162,6 +162,7 @@ class Routes {
   }
 
   @Router.post("/groups")
+  @Router.validate(z.object({ name: z.string(), capacity: z.string(), privacy: z.string(), location: z.string().optional() }))
   async createGroup(session: SessionDoc, name: string, capacity: string, privacy: string, location?: string)  {
     const user = Sessioning.getUser(session);
     const locationId = undefined;
@@ -201,10 +202,11 @@ class Routes {
   @Router.delete("/groups/:id")
   async disbandGroup(session: SessionDoc, id: string) {
     const user = Sessioning.getUser(session);
-    const oid = new ObjectId(id);
-    const response = await Grouping.disband(oid, user);
-    await Requesting.deleteByType(oid, "group");
-    return response;
+    const groupId = new ObjectId(id);
+    const response = await Grouping.disband(groupId, user);
+    await Authing.unsubscribeFromGroup(user, groupId);
+    await Requesting.deleteByType(groupId, "group");
+    return response
   }
 
   /**

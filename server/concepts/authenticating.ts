@@ -27,7 +27,7 @@ export default class AuthenticatingConcept {
 
   async create(username: string, password: string, email: string) {
     await this.assertGoodCredentials(username, password, email);
-    const _id = await this.users.createOne({ username, password, email });
+    const _id = await this.users.createOne({ username, password, email, groups: [] });
     return { msg: "User created successfully!", user: await this.users.readOne({ _id }) };
   }
 
