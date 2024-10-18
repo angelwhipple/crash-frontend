@@ -31,3 +31,7 @@ export class NotAllowedError extends FormattableError {
 export class NotFoundError extends FormattableError {
   public readonly HTTP_CODE = 404;
 }
+
+export class AlreadyExistsError extends FormattableError {
+  public readonly HTTP_CODE = 409;
+}

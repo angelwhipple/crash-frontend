@@ -25,14 +25,20 @@ onBeforeMount(async () => {
   <header>
     <nav>
       <div class="title">
-        <img src="@/assets/images/logo.svg" />
         <RouterLink :to="{ name: 'Home' }">
-          <h1>Social Media App</h1>
+          <h1>CRASH</h1>
         </RouterLink>
+      </div>
+      <div class="search">
+        <input style="width: 75%" placeholder="Search..." />
+        <button>Search</button>
       </div>
       <ul>
         <li>
           <RouterLink :to="{ name: 'Home' }" :class="{ underline: currentRouteName == 'Home' }"> Home </RouterLink>
+        </li>
+        <li>
+          <RouterLink :to="{ name: 'Map' }" :class="{ underline: currentRouteName == 'Map' }"> Map </RouterLink>
         </li>
         <li v-if="isLoggedIn">
           <RouterLink :to="{ name: 'Settings' }" :class="{ underline: currentRouteName == 'Settings' }"> Settings </RouterLink>
@@ -54,7 +60,7 @@ onBeforeMount(async () => {
 
 nav {
   padding: 1em 2em;
-  background-color: lightgray;
+  background-color: #1D005F;
   display: flex;
   align-items: center;
 }
@@ -70,13 +76,19 @@ h1 {
   gap: 0.5em;
 }
 
+.search {
+  display: flex;
+  justify-content: center;
+  width: 70%;
+}
+
 img {
   height: 2em;
 }
 
 a {
   font-size: large;
-  color: black;
+  color: white;
   text-decoration: none;
 }
 

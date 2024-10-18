@@ -7,6 +7,7 @@ export const useUserStore = defineStore(
   "user",
   () => {
     const currentUsername = ref("");
+    const subscribedGroups = ref([]);
 
     const isLoggedIn = computed(() => currentUsername.value !== "");
 
@@ -14,24 +15,34 @@ export const useUserStore = defineStore(
       currentUsername.value = "";
     };
 
-    const createUser = async (username: string, password: string) => {
+    const createUser = async (email: string, username: string, password: string) => {
       await fetchy("/api/users", "POST", {
-        body: { username, password },
+        body: { email, username, password },
       });
     };
 
-    const loginUser = async (username: string, password: string) => {
+    const fetchSessionUser = async () => {
+      return await fetchy(`/api/session`, "GET", {});
+    };
+
+    const fetchUserByEmail = async (email: string) => {
+      return await fetchy(`/api/users/validate/${email}`, "GET", {});
+    };
+
+    const loginUser = async (email: string, password: string) => {
       await fetchy("/api/login", "POST", {
-        body: { username, password },
+        body: { email, password },
       });
     };
 
     const updateSession = async () => {
       try {
-        const { username } = await fetchy("/api/session", "GET", { alert: false });
+        const { username, groups } = await fetchy("/api/session", "GET", { alert: false });
         currentUsername.value = username;
+        subscribedGroups.value = groups;
       } catch {
         currentUsername.value = "";
+        subscribedGroups.value = [];
       }
     };
 
@@ -57,6 +68,8 @@ export const useUserStore = defineStore(
       currentUsername,
       isLoggedIn,
       createUser,
+      fetchSessionUser,
+      fetchUserByEmail,
       loginUser,
       updateSession,
       logoutUser,
