@@ -45,7 +45,6 @@ const navigate = () => {
         </Suspense>
         <div v-else-if="activeTab == 'Dashboard'">
           <h4>Community dashboard</h4>
-          <button @click="setCreating(true)">Display modal</button>
         </div>
         <div v-else>
           <h4>Community settings</h4>

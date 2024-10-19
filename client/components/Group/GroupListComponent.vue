@@ -20,6 +20,6 @@ const { allGroups } = storeToRefs(useGroupStore());
   width: 100%;
   height: 100%;
   display: flex;
-  justify-content: space-around;
+  column-gap: 1rem;
 }
 </style>

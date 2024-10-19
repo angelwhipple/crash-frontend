@@ -42,6 +42,7 @@ const disband = async () => {
 <template>
   <div class="container">
     <h4>{{group.name}}</h4>
+    <p class="opaque">Owned by {{group.owner}}</p>
     <p>{{group.members.length}} members</p>
     <div class="actions">
       <button v-if="isMember" @click="leave()">Leave group</button>
@@ -56,8 +57,9 @@ const disband = async () => {
   border: 0.1rem solid;
   border-radius: 1rem;
   padding: 2%;
-  width: 20%;
-  height: 40%;
+  width: 30%;
+  height: fit-content;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -67,5 +69,9 @@ const disband = async () => {
 .container .actions {
   display: flex;
   justify-content: space-around;
+}
+
+.opaque {
+  opacity: 0.5;
 }
 </style>
