@@ -22,8 +22,8 @@ export default class RequestingConcept {
   }
 
   async open(sender: ObjectId, recipient: ObjectId, resource: ObjectId, category: 'friend' | 'group' | 'event', message?: string) {
-    await this.assertNewRequest(sender, recipient, category);
-    const _id = await this.requests.createOne({ sender, recipient, category, status: 'pending', message });
+    await this.assertNewRequest(sender, resource, category);
+    const _id = await this.requests.createOne({ sender, recipient, resource, category, status: 'pending', message });
     return { msg: `Opened a new ${category} request!`, request: await this.requests.readOne({ _id }) };
   }
 
@@ -35,6 +35,10 @@ export default class RequestingConcept {
 
   async getRequests(user: ObjectId, category?: 'friend' | 'group' | 'event') {
     return await this.requests.readMany({ $or: [{sender: user}, {recipient: user}], category });
+  }
+
+  async getRequestsByResource(resource: ObjectId, category: "friend" | "group" | "event")  {
+    return await this.requests.readMany({ resource, category });
   }
 
   async withdraw(_id: ObjectId, user: ObjectId)  {
@@ -55,10 +59,10 @@ export default class RequestingConcept {
     await this.requests.deleteMany({ resource, category });
   }
 
-  async assertNewRequest(sender: ObjectId, recipient: ObjectId, category: "friend" | "group" | "event") {
-    const request = await this.requests.readOne({ sender, recipient, category, status: "pending" });
+  async assertNewRequest(sender: ObjectId, resource: ObjectId, category: "friend" | "group" | "event") {
+    const request = await this.requests.readOne({ sender, resource, category, status: "pending" });
     if (request) {
-     throw new NotAllowedError(`A ${category} request from user ${sender} to user ${recipient} is already pending.`);
+     throw new NotAllowedError(`A ${category} request from user ${sender} for resource ${resource} is already pending.`);
     }
   }
 

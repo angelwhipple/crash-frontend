@@ -12,6 +12,7 @@ const userStore = useUserStore();
 const groupStore = useGroupStore();
 const { isLoggedIn } = storeToRefs(userStore);
 const { toast } = storeToRefs(useToastStore());
+const { groupView } = storeToRefs(groupStore);
 
 // Make sure to update the session before mounting the app in case the user is already logged in
 onBeforeMount(async () => {
@@ -27,27 +28,33 @@ onBeforeMount(async () => {
 <template>
   <header>
     <nav>
-      <div class="title">
-        <RouterLink :to="{ name: 'Home' }">
-          <h1>CRASH</h1>
-        </RouterLink>
-      </div>
-      <div class="search">
-        <input style="width: 75%" placeholder="Search..." />
-        <button>Search</button>
-      </div>
-      <ul>
-        <li>
-          <RouterLink :to="{ name: 'Home' }" :class="{ underline: currentRouteName == 'Home' }"> Home </RouterLink>
+      <RouterLink :to="{ name: 'Home' }">
+        <h1>crash</h1>
+      </RouterLink>
+      <ul v-if="currentRouteName == 'Home'" class="center-toggle">
+        <li
+          :class="{ active: groupView == 'community' }"
+          @click="groupStore.setGroupView('community')">Communities
         </li>
-        <li>
-          <RouterLink :to="{ name: 'Map' }" :class="{ underline: currentRouteName == 'Map' }"> Map </RouterLink>
+        <li
+          :class="{ active: groupView == 'roommate' }"
+          @click="groupStore.setGroupView('roommate')">Roommates
         </li>
-        <li v-if="isLoggedIn">
-          <RouterLink :to="{ name: 'Settings' }" :class="{ underline: currentRouteName == 'Settings' }"> Settings </RouterLink>
+      </ul>
+      <ul v-if="isLoggedIn">
+        <li
+          v-if="currentRouteName == 'Home' && groupView == 'community'"
+          @click="groupStore.setIsCreatingGroup(true)">
+          Create a community
         </li>
-        <li v-else>
-          <RouterLink :to="{ name: 'Login' }" :class="{ underline: currentRouteName == 'Login' }"> Login </RouterLink>
+        <li v-else-if="currentRouteName == 'Home' && groupView == 'roommate'">Create a roommate group</li>
+        <li :class="{ active: currentRouteName == 'Profile' }">
+          <RouterLink :to="{ name: 'Profile' }"> Profile </RouterLink>
+        </li>
+      </ul>
+      <ul v-else>
+        <li :class="{ active: currentRouteName == 'Login' }">
+          <RouterLink :to="{ name: 'Login' }" > Login </RouterLink>
         </li>
       </ul>
     </nav>
@@ -73,18 +80,6 @@ h1 {
   margin: 0;
 }
 
-.title {
-  display: flex;
-  align-items: center;
-  gap: 0.5em;
-}
-
-.search {
-  display: flex;
-  justify-content: center;
-  width: 70%;
-}
-
 img {
   height: 2em;
 }
@@ -104,7 +99,20 @@ ul {
   gap: 1em;
 }
 
-.underline {
-  text-decoration: underline;
+li {
+  -webkit-text-fill-color: white;
+  opacity: 0.5;
+  transition-duration: 0.3s;
+  cursor: pointer;
+}
+
+li:hover, li.active {
+  opacity: 1;
+}
+
+.center-toggle {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 </style>

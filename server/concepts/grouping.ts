@@ -9,6 +9,7 @@ export interface GroupDoc extends BaseDoc {
   capacity: number;
   privacy: boolean;
   location: ObjectId; // one Location
+  category: 'community' | 'roommate'
 }
 
 /**
@@ -21,10 +22,10 @@ export default class GroupingConcept {
     this.groups = new DocCollection<GroupDoc>(collectionName);
   }
 
-  async create(name: string, owner: ObjectId, capacity: string, privacy: string, location?: ObjectId) {
+  async create(name: string, category: 'community' | 'roommate', owner: ObjectId, capacity: string, privacy: string, location?: ObjectId) {
     await this.assertGoodInputs(name, privacy, capacity);
     const groupPrivacy = privacy === "true";
-    const _id = await this.groups.createOne({ name, owner, members: [owner], capacity: Number(capacity), privacy: groupPrivacy, location });
+    const _id = await this.groups.createOne({ name, category, owner, members: [owner], capacity: Number(capacity), privacy: groupPrivacy, location });
     return { msg: `Created a new group: ${name}`, group: await this.groups.readOne({ _id }) };
   }
 

@@ -104,7 +104,7 @@ export class Router {
         }
         const ret = req.params[name] || req.query[name] || req.body[name];
         if (ret === undefined || ret === null) {
-          // TODO: Can we know if this param was required?
+          // Can we know if this param was required?
           return undefined;
         }
         return ret;

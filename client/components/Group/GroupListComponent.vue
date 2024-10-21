@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, defineProps } from "vue";
+import { ref, defineProps, watch } from "vue";
 import { useGroupStore } from "@/stores/group";
 import GroupComponent from "@/components/Group/GroupComponent.vue";
 import { storeToRefs } from "pinia";
@@ -11,15 +11,24 @@ const { allGroups } = storeToRefs(useGroupStore());
 
 <template>
   <section class="scrollable">
-    <GroupComponent v-for="group in allGroups" :group="group" :group-type="props.groupType" ></GroupComponent>
+    <GroupComponent
+      v-for="group in allGroups"
+      :key="group._id.toString()"
+      :group-id="group._id.toString()"
+      :group-type="props.groupType" >
+    </GroupComponent>
   </section>
 </template>
 
 <style scoped>
 .scrollable {
-  width: 100%;
-  height: 100%;
+  height: 90%;
   display: flex;
-  column-gap: 1rem;
+  flex-wrap: wrap;
+  padding: 2rem;
+  column-gap: 2rem;
+  row-gap: 2rem;
+  overflow-y: scroll;
+  justify-content: center;
 }
 </style>

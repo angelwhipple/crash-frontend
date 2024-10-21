@@ -4,7 +4,7 @@ import { useUserStore } from "@/stores/user";
 import { ref, defineProps, defineEmits } from "vue";
 
 const props = defineProps(["groupType"]);
-const emit = defineEmits(["cancelCreate"]);
+const emit = defineEmits(["changeCommunity"]);
 
 const groupStore = useGroupStore();
 const userStore = useUserStore();
@@ -12,22 +12,23 @@ const userStore = useUserStore();
 const name = ref("");
 const capacity = ref(0);
 const isPrivate = ref(false);
-const groupType = ref(props.groupType);
 
 const cancelCreate = () => {
-  emit("cancelCreate");
+  groupStore.setIsCreatingGroup(false);
 };
 
 const handleCreate = async () => {
-  await groupStore.createGroup(name.value, isPrivate.value.toString(), capacity.value);
+  const response = await groupStore.createGroup(name.value, props.groupType, isPrivate.value.toString(), capacity.value);
   await userStore.updateSession();
+  emit("changeCommunity", response.group._id);
+  cancelCreate();
 }
 </script>
 
 <template>
   <section class="modal centered">
     <section class="content">
-      <h4>Create a new {{groupType}}</h4>
+      <h4>New {{groupType}}</h4>
       <form class="pure-form pure-form-aligned" @submit.prevent="handleCreate">
         <div class="pure-control-group">
           <label for="aligned-name">Name</label>
@@ -39,13 +40,13 @@ const handleCreate = async () => {
         </div>
         <div class="pure-control-group">
           <label for="aligned-privacy">Private</label>
-          <input v-model.trim="isPrivate" id="aligned-privacy" type="checkbox" required />
+          <input v-model.trim="isPrivate" id="aligned-privacy" type="checkbox" />
         </div>
         <div class="pure-controls">
           <button @click="cancelCreate()">Cancel</button>
         </div>
         <div class="pure-controls">
-          <button @click="handleCreate()">Create</button>
+          <button>Create</button>
         </div>
       </form>
     </section>

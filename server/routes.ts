@@ -31,10 +31,11 @@ class Routes {
     return await Authing.getUsers();
   }
 
-  @Router.get("/users/:username")
-  @Router.validate(z.object({ username: z.string().min(1) }))
-  async getUser(username: string) {
-    return await Authing.getUserByUsername(username);
+  @Router.get("/users/:id")
+  @Router.validate(z.object({ id: z.string().min(1) }))
+  async getUser(id: string) {
+    const oid = new ObjectId(id);
+    return await Authing.getUserById(oid);
   }
 
   @Router.get("/users/validate/:email")
@@ -162,15 +163,14 @@ class Routes {
   }
 
   @Router.post("/groups")
-  @Router.validate(z.object({ name: z.string(), capacity: z.string(), privacy: z.string(), location: z.string().optional() }))
-  async createGroup(session: SessionDoc, name: string, capacity: string, privacy: string, location?: string)  {
+  async createGroup(session: SessionDoc, name: string, category: "community" | "roommate", capacity: string, privacy: string, location?: string)  {
     const user = Sessioning.getUser(session);
     const locationId = undefined;
     if (location) {
       const locationId = new ObjectId(location);
       await Locating.assertLocationExists(locationId);
     }
-    const response = await Grouping.create(name, user, capacity, privacy, locationId);
+    const response = await Grouping.create(name, category, user, capacity, privacy, locationId);
     await Authing.subscribeToGroup(user, response.group!._id);
     return response;
   }
@@ -253,24 +253,30 @@ class Routes {
 
   @Router.post("/requests/:category/:id")
   async openRequest(session: SessionDoc, category: "friend" | "group" | "event", id: string, message?: string) {
-    const oid = new ObjectId(id);
+    const resourceId = new ObjectId(id);
     const sender = Sessioning.getUser(session);
     let recipient;
     switch (category) {
       case "friend":
-        recipient = oid;
+        recipient = resourceId;
         await Friending.assertNotFriends(sender, recipient);
         break;
-      case "group": recipient = await Grouping.getOwner(oid); break;
-      case "event": recipient = await Eventing.getHost(oid); break;
+      case "group": recipient = await Grouping.getOwner(resourceId); break;
+      case "event": recipient = await Eventing.getHost(resourceId); break;
     }
-    return await Requesting.open(sender, recipient!, oid, category, message);
+    return await Requesting.open(sender, recipient!, resourceId, category, message);
   }
 
   @Router.get("/requests")
   async getRequests(session: SessionDoc) {
     const user = Sessioning.getUser(session);
     return await Requesting.getRequests(user);
+  }
+
+  @Router.get(`/requests/:category/:id`)
+  async getRequestsByResource(id: string, category: 'group' | 'event' | 'friend') {
+    const oid = new ObjectId(id);
+    return await Requesting.getRequestsByResource(oid, category);
   }
 
   @Router.put("/requests/accept/:requestId")

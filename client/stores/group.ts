@@ -11,9 +11,15 @@ import { useUserStore } from "@/stores/user";
 export const useGroupStore = defineStore(
   "group",
   () => {
+    // TODO: Add active community
+
     const { currentUser } = storeToRefs(useUserStore());
 
-    const allGroups = ref([]);
+    const allGroups = ref<GroupDoc[]>([]);
+
+    const groupView = ref("community")
+
+    const isCreatingGroup = ref(false);
 
     const subscribedGroups = computed<GroupDoc[]>(() => {
       if (currentUser.value) {
@@ -23,6 +29,14 @@ export const useGroupStore = defineStore(
       }
       return [];
     })
+
+    const setGroupView = (view: string) => {
+      groupView.value = view;
+    }
+
+    const setIsCreatingGroup = (isCreating: boolean) => {
+      isCreatingGroup.value = isCreating;
+    }
 
     const refreshAllGroups = async () => {
       allGroups.value = await fetchy("/api/groups", "GET", {});
@@ -40,8 +54,8 @@ export const useGroupStore = defineStore(
       return await fetchy(`/api/groups/members/remove/${id}`, "PUT", { body: { member } });
     }
 
-    const createGroup = async (name: string, privacy: string, capacity: number) => {
-      const response = await fetchy("/api/groups", "POST", { body: { name, capacity, privacy } });
+    const createGroup = async (name: string, category: string, privacy: string, capacity: number) => {
+      const response = await fetchy("/api/groups", "POST", { body: { name, category, capacity, privacy } });
       await refreshAllGroups();
       return response;
     }
@@ -55,12 +69,16 @@ export const useGroupStore = defineStore(
     return {
       allGroups,
       subscribedGroups,
+      groupView,
+      isCreatingGroup,
       refreshAllGroups,
       loadGroup,
       joinGroup,
       leaveGroup,
       createGroup,
       deleteGroup,
+      setGroupView,
+      setIsCreatingGroup,
     }
   },
   { persist: true },

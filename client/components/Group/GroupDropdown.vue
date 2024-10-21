@@ -3,24 +3,24 @@ import { computed, ref, defineProps, defineEmits } from "vue";
 import { useGroupStore } from "@/stores/group";
 import { storeToRefs } from "pinia";
 
-const props = defineProps(["groupType"]);
-const emit = defineEmits(["createNew"])
+const props = defineProps(["groupType", "activeCommunity"]);
+const emit = defineEmits(["changeCommunity"])
 
 const groupStore = useGroupStore();
 const { subscribedGroups } = storeToRefs(groupStore);
 
 const handleSelect = (event: any) => {
-  if (event.target.value === `New ${props.groupType}`) {
-    emit("createNew");
-  }
+  emit("changeCommunity", event.target.options[event.target.selectedIndex].id);
 }
 </script>
 
 <template>
-    <select @change="handleSelect">
-      <option id="group._id" v-for="group of subscribedGroups">{{group.name}}</option>
-      <option>New {{props.groupType}}</option>
-    </select>
+  <select @change="handleSelect">
+    <option
+      :id="group._id.toString()"
+      v-for="group of subscribedGroups"
+      :selected="props.activeCommunity === group._id">{{group.name}}</option>
+  </select>
 </template>
 
 <style scoped>
