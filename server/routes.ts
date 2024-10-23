@@ -144,7 +144,7 @@ class Routes {
   @Router.get("/friends/requests")
   async getFriendRequests(session: SessionDoc) {
     const user = Sessioning.getUser(session);
-    return await Responses.Requests(await Requesting.getRequests(user, "friend"));
+    return await Responses.Requests(await Requesting.getRequestsByResource(user, "friend"));
   }
 
   /**
@@ -271,6 +271,12 @@ class Routes {
   async getRequests(session: SessionDoc) {
     const user = Sessioning.getUser(session);
     return await Requesting.getRequests(user);
+  }
+
+  @Router.get("/requests/:id")
+  async getRequest(id: string) {
+    const oid = new ObjectId(id);
+    return await Requesting.getRequestById(oid);
   }
 
   @Router.get(`/requests/:category/:id`)

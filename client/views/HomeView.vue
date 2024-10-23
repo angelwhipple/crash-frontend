@@ -7,6 +7,7 @@ import { ref, watch } from "vue";
 import CreateGroupForm from "@/components/Group/CreateGroupForm.vue";
 import GroupListComponent from "@/components/Group/GroupListComponent.vue";
 import { useGroupStore } from "@/stores/group";
+import MapComponent from "@/components/Locate/MapComponent.vue";
 
 const EMPTY_COMMUNITY = { _id: null, name : 'No communities' };
 
@@ -15,9 +16,14 @@ const { isLoggedIn } = storeToRefs(useUserStore());
 const { subscribedGroups, isCreatingGroup, groupView } = storeToRefs(groupStore);
 
 const activeCommunity = ref(subscribedGroups.value.length > 0 ? subscribedGroups.value[0]._id.toString() : EMPTY_COMMUNITY);
+const mapActive = ref(false);
 
 const setCommunity = (id: string) => {
   activeCommunity.value = id;
+}
+
+const toggleMap = (active: boolean) => {
+  mapActive.value = active;
 }
 
 const navigate = () => {
@@ -35,7 +41,7 @@ watch(activeCommunity, (active) => {
     <CreateGroupForm
       v-if="isCreatingGroup && isLoggedIn"
       @change-community="setCommunity"
-      group-type="community">
+      :group-type="groupStore.groupView">
     </CreateGroupForm>
     <section v-if="isLoggedIn" class="vertical">
       <section class="search-panel">
@@ -46,21 +52,21 @@ watch(activeCommunity, (active) => {
           </label>
           <label>
             Where
-            <input placeholder="Search for places..." />
+            <input id="location-input" placeholder="Search by city, state, or zipcode..." type="text" />
           </label>
         </div>
       </section>
-      <hr>
       <section class="results-panel">
-        <Suspense v-if="groupView == 'community'" >
+        <MapComponent v-if="mapActive"></MapComponent>
+        <Suspense v-else-if="groupView == 'community'" >
           <GroupListComponent group-type="community"/>
           <template #fallback>
             <p class="centered">Content is being loaded...</p>
           </template>
         </Suspense>
-        <PostListComponent v-else/>
+        <PostListComponent v-else></PostListComponent>
       </section>
-      <button>Show map</button>
+      <button @click="toggleMap(!mapActive)">{{ mapActive ? "Close map" : "Show map" }} </button>
     </section>
     <section v-else class="column">
       <h1>Login to view this content</h1>
@@ -83,6 +89,7 @@ h1 {
 }
 
 .results-panel {
+  background-color: var(--light-gray);
   height: 75%;
 }
 
@@ -109,13 +116,13 @@ h1 {
 }
 
 .searchbar input:focus, .searchbar input:hover {
-  background-color: lightgray;
+  background-color: var(--light-gray);
   transition-duration: 0.3s;
 }
 
 button {
   position: absolute;
-  bottom: 10%;
+  bottom: 1%;
   left: 50%;
   transform: translateX(-50%);
   padding: 0.5rem;

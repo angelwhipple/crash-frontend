@@ -18,7 +18,7 @@ const handleSelect = (event: any) => {
   <select @change="handleSelect">
     <option
       :id="group._id.toString()"
-      v-for="group of subscribedGroups"
+      v-for="group in subscribedGroups"
       :selected="props.activeCommunity === group._id">{{group.name}}</option>
   </select>
 </template>

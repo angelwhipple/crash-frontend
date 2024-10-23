@@ -22,7 +22,7 @@ const { allGroups } = storeToRefs(useGroupStore());
 
 <style scoped>
 .scrollable {
-  height: 90%;
+  height: 100%;
   display: flex;
   flex-wrap: wrap;
   padding: 2rem;

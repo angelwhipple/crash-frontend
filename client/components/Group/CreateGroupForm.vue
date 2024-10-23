@@ -28,47 +28,58 @@ const handleCreate = async () => {
 <template>
   <section class="modal centered">
     <section class="content">
-      <h4>New {{groupType}}</h4>
-      <form class="pure-form pure-form-aligned" @submit.prevent="handleCreate">
-        <div class="pure-control-group">
-          <label for="aligned-name">Name</label>
-          <input v-model.trim="name" id="aligned-name" type="text" placeholder="Community name" required />
-        </div>
-        <div class="pure-control-group">
-          <label for="aligned-capacity">Capacity</label>
-          <input v-model.trim="capacity" id="aligned-capacity" type="number" required />
-        </div>
-        <div class="pure-control-group">
-          <label for="aligned-privacy">Private</label>
-          <input v-model.trim="isPrivate" id="aligned-privacy" type="checkbox" />
-        </div>
-        <div class="pure-controls">
-          <button @click="cancelCreate()">Cancel</button>
-        </div>
-        <div class="pure-controls">
-          <button>Create</button>
-        </div>
+      <form>
+        <fieldset class="form-group" @submit.prevent="handleCreate">
+          <legend>New {{ groupType }} group</legend>
+          <label for="group-name">Group name</label>
+          <input v-model.trim="name" type="text" placeholder="Enter a name" required />
+        </fieldset>
+
+        <fieldset class="form-group">
+          <label for="group-capacity">Capacity</label>
+          <input v-model.trim="capacity" type="number" placeholder="Max members" required />
+        </fieldset>
+
+        <fieldset class="form-group">
+          <label for="group-privacy">Privacy</label>
+          <input v-model.trim="isPrivate" type="checkbox" />
+        </fieldset>
+
+        <fieldset v-if="groupType == 'roommate'" class="form-group">
+          <label for="homeLocation">I am living...</label>
+          <input type="text" placeholder="Enter a location" />
+          <label for="workLocation">I am working from...</label>
+          <input type="text" placeholder="Enter a location" />
+        </fieldset>
+
+        <button class="pure-button pure-button-primary" @click="cancelCreate()">Cancel</button>
+        <button type="submit" class="pure-button pure-button-primary">Create</button>
       </form>
     </section>
   </section>
 </template>
 
 <style scoped>
-.modal {
-  display: flex;
-  position: fixed;
-  z-index: 1;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+form {
+  margin: auto;
+  padding: 2rem;
 }
 
-.modal .content {
-  position: absolute;
-  background-color: white;
-  width: 60%;
-  height: 60%;
-  animation: fadeIn 0.3s;
-  border-radius: 1em;
+fieldset {
+  border: none;
+  padding: 0;
+}
+
+label {
+  flex: 1;
+  font-weight: bold;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  width: 100%;
 }
 </style>

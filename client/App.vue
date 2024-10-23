@@ -29,32 +29,38 @@ onBeforeMount(async () => {
   <header>
     <nav>
       <RouterLink :to="{ name: 'Home' }">
-        <h1>crash</h1>
+        <h1 class="title">crash</h1>
       </RouterLink>
       <ul v-if="currentRouteName == 'Home'" class="center-toggle">
         <li
+          title="Communities"
           :class="{ active: groupView == 'community' }"
-          @click="groupStore.setGroupView('community')">Communities
+          @click="groupStore.setGroupView('community')">
+          <v-icon name="io-people-sharp" fill="var(--primary)" scale="1.25"></v-icon>
         </li>
         <li
+          title="Roommates"
           :class="{ active: groupView == 'roommate' }"
-          @click="groupStore.setGroupView('roommate')">Roommates
+          @click="groupStore.setGroupView('roommate')">
+            <v-icon name="fa-house-user" fill="var(--primary)" scale="1.25"></v-icon>
         </li>
       </ul>
       <ul v-if="isLoggedIn">
         <li
-          v-if="currentRouteName == 'Home' && groupView == 'community'"
+          v-if="currentRouteName == 'Home'"
           @click="groupStore.setIsCreatingGroup(true)">
-          Create a community
+          <span v-if="groupView == 'community'">Create a community</span>
+          <span v-else>Create a roommate group</span>
         </li>
-        <li v-else-if="currentRouteName == 'Home' && groupView == 'roommate'">Create a roommate group</li>
-        <li :class="{ active: currentRouteName == 'Profile' }">
-          <RouterLink :to="{ name: 'Profile' }"> Profile </RouterLink>
+        <li :class="{ active: currentRouteName == 'Profile' }" title="Profile">
+          <RouterLink :to="{ name: 'Profile' }" :class="{ active: currentRouteName == 'Profile' }">
+            <v-icon name="bi-person-fill" fill="var(--primary)" scale="1.25"></v-icon>
+          </RouterLink>
         </li>
       </ul>
       <ul v-else>
         <li :class="{ active: currentRouteName == 'Login' }">
-          <RouterLink :to="{ name: 'Login' }" > Login </RouterLink>
+          <RouterLink :to="{ name: 'Login' }" :class="{ active: currentRouteName == 'Login' }"> Login </RouterLink>
         </li>
       </ul>
     </nav>
@@ -69,10 +75,15 @@ onBeforeMount(async () => {
 @import "./assets/toast.css";
 
 nav {
-  padding: 1em 2em;
-  background-color: #1D005F;
+  padding: 0 2em;
+  background-color: white;
   display: flex;
   align-items: center;
+}
+
+.title {
+  font-weight: normal;
+  -webkit-text-fill-color: var(--primary);
 }
 
 h1 {
@@ -86,28 +97,41 @@ img {
 
 a {
   font-size: large;
-  color: white;
   text-decoration: none;
+  -webkit-text-fill-color: black;
+}
+
+a:hover, a.active {
+  -webkit-text-fill-color: var(--primary);
 }
 
 ul {
+  margin: 0 0 0 auto;
+  padding: 0;
   list-style-type: none;
-  margin-left: auto;
   display: flex;
   align-items: center;
   flex-direction: row;
-  gap: 1em;
 }
 
 li {
-  -webkit-text-fill-color: white;
+  -webkit-text-fill-color: black;
   opacity: 0.5;
+  padding: 1em;
+  border-bottom: 2px solid transparent;
   transition-duration: 0.3s;
   cursor: pointer;
 }
 
-li:hover, li.active {
+li:hover {
   opacity: 1;
+  -webkit-text-fill-color: var(--primary);
+}
+
+li.active {
+  opacity: 1;
+  -webkit-text-fill-color: var(--primary);
+  border-bottom: 0.2em solid var(--primary);
 }
 
 .center-toggle {

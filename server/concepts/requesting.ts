@@ -33,8 +33,12 @@ export default class RequestingConcept {
     return { msg: `Successfully ${accept ? 'accepted' : 'declined'} request!`, request: await this.requests.readOne({ _id }) };
   }
 
-  async getRequests(user: ObjectId, category?: 'friend' | 'group' | 'event') {
-    return await this.requests.readMany({ $or: [{sender: user}, {recipient: user}], category });
+  async getRequests(user: ObjectId) {
+    return await this.requests.readMany({ $or: [{sender: user}, {recipient: user}] });
+  }
+
+  async getRequestById(_id: ObjectId) {
+    return await this.requests.readOne({ _id });
   }
 
   async getRequestsByResource(resource: ObjectId, category: "friend" | "group" | "event")  {
@@ -62,7 +66,7 @@ export default class RequestingConcept {
   async assertNewRequest(sender: ObjectId, resource: ObjectId, category: "friend" | "group" | "event") {
     const request = await this.requests.readOne({ sender, resource, category, status: "pending" });
     if (request) {
-     throw new NotAllowedError(`A ${category} request from user ${sender} for resource ${resource} is already pending.`);
+     throw new AlreadyExistsError(`A ${category} request from user ${sender} for resource ${resource} is already pending.`);
     }
   }
 

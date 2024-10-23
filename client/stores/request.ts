@@ -1,11 +1,13 @@
 import { defineStore } from "pinia";
-import { computed, ref } from "vue";
-
 import { fetchy } from "@/utils/fetchy";
 
 export const useRequestStore = defineStore(
   "request",
   () => {
+
+    const fetchRequest = async (requestId: string) => {
+      return await fetchy(`/api/requests/${requestId}`, "GET", {});
+    }
 
     const getRequestsByUser = async () => {
       return await fetchy("/api/requests", "GET", {});
@@ -15,8 +17,18 @@ export const useRequestStore = defineStore(
       return await fetchy(`/api/requests/${category}/${resourceId}`, "GET", {});
     }
 
+    const getUserRequestsByStatus = async(status: string) => {}
+
     const makeRequest = async (resourceId: string, category: string) => {
       return await fetchy(`/api/requests/${category}/${resourceId}`, "POST", {});
+    }
+
+    const acceptRequest = async(requestId: string) => {
+      return await fetchy(`/api/requests/accept/${requestId}`, "PUT", {});
+    }
+
+    const declineRequest = async(requestId: string) => {
+      return await fetchy(`/api/requests/decline/${requestId}`, "PUT", {});
     }
 
     const withdrawRequest = async (requestId: string)  => {
@@ -25,9 +37,13 @@ export const useRequestStore = defineStore(
 
 
     return {
+      fetchRequest,
       getRequestsByUser,
       getRequestsByResource,
+      getUserRequestsByStatus,
       makeRequest,
+      acceptRequest,
+      declineRequest,
       withdrawRequest,
     }
   },
