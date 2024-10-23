@@ -49,8 +49,8 @@ onBeforeMount(async () => {
   loader
     .load()
     .then((google) => {
-      map.value = new google.maps.Map(document.getElementById("map"), mapOptions)
-      const auto = new google.maps.places.Autocomplete(document.getElementById("location-input"));
+      map.value = new google.maps.Map(document.getElementById("map") as HTMLElement, mapOptions)
+      const auto = new google.maps.places.Autocomplete(document.getElementById("location-input") as HTMLInputElement);
       auto.addListener('place_changed', () => {
         place.value = auto.getPlace();
         map.value.setCenter(place.value.geometry.location);
