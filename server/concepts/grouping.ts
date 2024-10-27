@@ -10,6 +10,15 @@ export interface GroupDoc extends BaseDoc {
   privacy: boolean;
   location: ObjectId; // one Location
   category: 'community' | 'roommate'
+  livingOptions?: ObjectId
+}
+
+export interface LivingOptionsDoc extends GroupDoc {
+  group: ObjectId
+  moveIn: Date;
+  moveOut: Date;
+  budgetMin?: number;
+  budgetMax?: number;
 }
 
 /**
@@ -17,16 +26,25 @@ export interface GroupDoc extends BaseDoc {
  */
 export default class GroupingConcept {
   public readonly groups: DocCollection<GroupDoc>;
+  public readonly livingOptions: DocCollection<LivingOptionsDoc>;
 
   constructor(collectionName: string) {
     this.groups = new DocCollection<GroupDoc>(collectionName);
+    this.livingOptions = new DocCollection<LivingOptionsDoc>(`${collectionName}_arrangements`);
   }
 
-  async create(name: string, category: 'community' | 'roommate', owner: ObjectId, capacity: string, privacy: string, location?: ObjectId) {
+  async create(name: string, category: 'community' | 'roommate', owner: ObjectId, capacity: string, privacy: string, location: ObjectId, moveIn?: Date, moveOut?: Date) {
     await this.assertGoodInputs(name, privacy, capacity);
     const groupPrivacy = privacy === "true";
     const _id = await this.groups.createOne({ name, category, owner, members: [owner], capacity: Number(capacity), privacy: groupPrivacy, location });
+    if (moveIn && moveOut) {
+      await this.livingOptions.createOne({ group: _id, moveIn, moveOut });
+    }
     return { msg: `Created a new group: ${name}`, group: await this.groups.readOne({ _id }) };
+  }
+
+  async fetchLivingOptions(group: ObjectId) {
+    return await this.livingOptions.readOne({ group });
   }
 
   async rename(_id: ObjectId, user: ObjectId, name: string) {
@@ -73,8 +91,8 @@ export default class GroupingConcept {
     return await this.groups.readMany({ owner });
   }
 
-  async getByName(name: string) {
-    return await this.groups.readMany({ name });
+  async getGroupsByName(name: string) {
+    return await this.groups.readMany({ name: { $regex: name, $options: "i" } });
   }
 
   async getOwner(_id: ObjectId) {

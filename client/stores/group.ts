@@ -1,37 +1,71 @@
 import { defineStore } from "pinia";
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 
 import { fetchy } from "@/utils/fetchy";
 import { ObjectId } from "mongodb";
 import { GroupDoc } from "../../server/concepts/grouping";
 import { useUserStore } from "@/stores/user";
+import { useLocationStore } from "@/stores/locate"
+import { inRange } from "@/utils/locator";
 
+type GroupFilter = {
+  name?: string;
+  meterRadius: number,
+  lat: number;
+  lng: number;
+};
 
 export const useGroupStore = defineStore(
   "group",
   () => {
-    // TODO: Add active community
-
+    const locationStore = useLocationStore();
     const { currentUser } = storeToRefs(useUserStore());
 
     const allGroups = ref<GroupDoc[]>([]);
+
+    const groupFilter = ref<GroupFilter>();
+
+    const filteredGroups = ref<GroupDoc[]>([]);
 
     const groupView = ref("community")
 
     const isCreatingGroup = ref(false);
 
-    const subscribedGroups = computed<GroupDoc[]>(() => {
-      if (currentUser.value) {
-        return allGroups.value.filter((group: GroupDoc) => {
-          return currentUser.value!.groups.some((groupId) => groupId === group._id);
-        });
-      }
-      return [];
-    })
+    const setGroupFilter =  (filter: GroupFilter) => {
+      groupFilter.value = filter;
+    }
 
-    const setGroupView = (view: string) => {
+    const filterGroups = async () => {
+      if (groupFilter.value) {
+        let matches: GroupDoc[];
+        if (groupFilter.value.name) {
+          matches = await fetchy(`/api/groups/query/${groupFilter.value.name}`, "GET", { alert: false });
+          matches = matches.filter((group) => group.name === groupView.value);
+        } else {
+          matches = allGroups.value;
+        }
+
+        const inRangeGroups = await Promise.all(
+          matches.map(async (group) => {
+            let response = await locationStore.fetchLocation(group.location.toString());
+            let from = new google.maps.LatLng(groupFilter.value!.lat, groupFilter.value!.lng);
+            let to = new google.maps.LatLng(response.location.lat, response.location.lng);
+            if (inRange(from, to, groupFilter.value!.meterRadius)) {
+              return group;
+            } else return null;
+          })
+        );
+        filteredGroups.value = inRangeGroups.filter((group) => group !== null)
+      } else {
+        filteredGroups.value = allGroups.value;
+      }
+    }
+
+    const setGroupView = async (view: string) => {
       groupView.value = view;
+      await refreshAllGroups();
+      await filterGroups();
     }
 
     const setIsCreatingGroup = (isCreating: boolean) => {
@@ -39,23 +73,28 @@ export const useGroupStore = defineStore(
     }
 
     const refreshAllGroups = async () => {
-      allGroups.value = await fetchy("/api/groups", "GET", {});
+      let groups: GroupDoc[] = await fetchy("/api/groups", "GET", { alert: false });
+      allGroups.value = groups.filter((group) => group.category === groupView.value);
     }
 
     const loadGroup = async (id: string) => {
-      return await fetchy(`/api/groups/${id}`, "GET", {});
+      return await fetchy(`/api/groups/${id}`, "GET", { alert: false });
+    }
+
+    const loadLivingOptions = async (id: string) => {
+      return await fetchy(`/api/groups/roommates/${id}`, "GET", { alert: false });
     }
 
     const joinGroup = async (id: string, user: any) => {
-      return await fetchy(`/api/groups/members/add/${id}`, "PUT", { body: { user } });
+      return await fetchy(`/api/groups/members/add/${id}`, "PUT", { body: { user }, alert: false });
     }
 
     const leaveGroup = async (id: string, member: any) => {
-      return await fetchy(`/api/groups/members/remove/${id}`, "PUT", { body: { member } });
+      return await fetchy(`/api/groups/members/remove/${id}`, "PUT", { body: { member }, alert: false });
     }
 
-    const createGroup = async (name: string, category: string, privacy: string, capacity: number) => {
-      const response = await fetchy("/api/groups", "POST", { body: { name, category, capacity, privacy } });
+    const createGroup = async (name: string, category: string, privacy: string, capacity: number, location: string, moveIn: string, moveOut: string) => {
+      const response = await fetchy("/api/groups", "POST", { body: { name, category, capacity, privacy, location, moveIn, moveOut } });
       await refreshAllGroups();
       return response;
     }
@@ -66,20 +105,24 @@ export const useGroupStore = defineStore(
       return response;
     }
 
+    watch(groupFilter, filterGroups);
+
     return {
       allGroups,
-      subscribedGroups,
+      filteredGroups,
       groupView,
       isCreatingGroup,
       refreshAllGroups,
+      filterGroups,
       loadGroup,
+      loadLivingOptions,
       joinGroup,
       leaveGroup,
       createGroup,
       deleteGroup,
       setGroupView,
+      setGroupFilter,
       setIsCreatingGroup,
     }
-  },
-  { persist: true },
+  }
 )

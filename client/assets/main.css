@@ -98,6 +98,7 @@ a.button {
   height: 60%;
   animation: fadeIn 0.3s;
   border-radius: 1em;
+  overflow-y: scroll;
 }
 
 .opaque {

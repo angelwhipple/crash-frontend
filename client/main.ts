@@ -5,10 +5,11 @@ import { createPinia } from "pinia";
 import piniaPluginPersistedState from "pinia-plugin-persistedstate";
 import { createApp } from "vue";
 
-import { BiPersonFill, IoPeopleCircleSharp, BiGearFill, BiPersonCircle, BiInboxFill, IoPeopleSharp, FaHouseUser } from "oh-vue-icons/icons";
+// Bi, Io, Fa
+import { BiPersonFill, IoPeopleCircleSharp, BiGearFill, BiPersonCircle, BiInboxFill, IoPeopleSharp, FaHouseUser, FaMap, FaList, FaSearch } from "oh-vue-icons/icons";
 import { OhVueIcon, addIcons } from "oh-vue-icons";
 
-addIcons(BiPersonFill, BiPersonCircle, IoPeopleCircleSharp, IoPeopleSharp, BiGearFill, BiInboxFill, FaHouseUser);
+addIcons(BiPersonFill, BiPersonCircle, IoPeopleCircleSharp, IoPeopleSharp, BiGearFill, BiInboxFill, FaHouseUser, FaMap, FaList, FaSearch);
 
 import App from "./App.vue";
 import router from "./router";

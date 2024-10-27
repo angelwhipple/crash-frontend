@@ -1,19 +1,23 @@
 <script setup lang="ts">
-import { computed, ref, defineProps, defineEmits, onBeforeMount } from "vue";
+import { computed, ref, defineProps, onBeforeMount } from "vue";
 import { useGroupStore } from "@/stores/group";
 import { useUserStore } from "@/stores/user";
 import { useRequestStore } from "@/stores/request";
+import { useLocationStore } from "@/stores/locate";
 import { storeToRefs } from "pinia";
 import { dateFromString } from "@/utils/formatDate";
 
-const props = defineProps(["groupId", "groupType"]);
+const props = defineProps(["group", "groupType", "isInfoWindow"]);
 const groupStore = useGroupStore();
 const userStore = useUserStore();
 const requestStore = useRequestStore();
+const locationStore = useLocationStore();
 const { currentUser } = storeToRefs(userStore);
 
-const group = ref(await groupStore.loadGroup(props.groupId));
+const group = ref(props.group);
+const location = ref();
 const requests = ref([]);
+const livingOptions = ref();
 
 const isOwner = computed(() => currentUser.value!._id.toString() === group.value.owner.toString());
 const isMember = computed(() => {
@@ -32,7 +36,7 @@ const join = async () => {
 }
 
 const request = async () => {
-  await requestStore.makeRequest(props.groupId, "group");
+  await requestStore.makeRequest(group.value._id, "group");
   await refreshRequests();
 }
 
@@ -54,26 +58,41 @@ const disband = async () => {
 }
 
 const refreshGroup = async () => {
-  group.value = await groupStore.loadGroup(props.groupId);
+  group.value = await groupStore.loadGroup(group.value._id);
 }
 
 const refreshRequests = async () => {
-  requests.value = await requestStore.getRequestsByResource(props.groupId, 'group')
+  requests.value = await requestStore.getRequestsByResource(group.value._id, 'group')
+}
+
+const refreshLocation = async () => {
+  const response = await locationStore.fetchLocation(group.value.location)
+  location.value = response.location;
+}
+
+const refreshLivingOptions = async () => {
+  if (group.value.category == 'roommate') {
+    livingOptions.value = await groupStore.loadLivingOptions(group.value._id);
+  }
 }
 
 onBeforeMount(async () => {
   try {
+    await refreshLocation();
     await refreshRequests();
+    await refreshLivingOptions();
   } catch {}
 });
 </script>
 
 <template>
-  <div class="card">
+  <div :class="isInfoWindow ? 'info-window' : 'card'">
     <section class="info">
       <a><b>{{group.name}}</b></a>
-      <p class="opaque text-sm">Location</p>
-      <p class="text-sm">{{group.members.length}} members</p>
+      <p v-if="location" class="opaque text-sm">{{ location.city }}, {{ location.state }}, {{ location.country }}</p>
+      <p v-if="group.category === 'community'" class="text-sm">{{group.members.length}} members</p>
+      <p v-else class="text-sm">{{group.members.length}} / {{group.capacity}} members</p>
+      <p v-if="livingOptions" class="text-sm">Seeking accommodations from {{ dateFromString(livingOptions.moveIn).toLocaleDateString() }} to {{ dateFromString(livingOptions.moveOut).toLocaleDateString() }}</p>
     </section>
     <hr style="color:var(--light-gray)">
     <section class="bottom-pane">
@@ -115,19 +134,26 @@ p {
   box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.3)
 }
 
-.card .info {
+.info-window {
+  width: 25vw;
+  height: 20vh;
+  display: flex;
+  flex-direction: column;
+}
+
+section .info {
   height: 80%;
   padding: 1rem;
 }
 
-.card .bottom-pane {
+section .bottom-pane {
   width: 100%;
   display: flex;
   align-items: center;
   padding: 0.5rem;
 }
 
-.card .bottom-pane button {
+section .bottom-pane button {
   background-color: inherit;
   opacity: 0.5;
   border: none;
@@ -136,7 +162,7 @@ p {
   margin-left: auto;
 }
 
-.card .bottom-pane button:hover {
+section .bottom-pane button:hover {
   opacity: 1;
   -webkit-text-fill-color: var(--primary);
 }

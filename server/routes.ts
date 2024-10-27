@@ -162,15 +162,28 @@ class Routes {
     return await Grouping.getById(oid);
   }
 
+  @Router.get("/groups/query/:name")
+  async getGroupsByName(name: string) {
+    return Grouping.getGroupsByName(name);
+  }
+
+  @Router.get("/groups/roommates/:groupId")
+  async getGroupLivingOptions(groupId: string) {
+    const oid = new ObjectId(groupId);
+    return await Grouping.fetchLivingOptions(oid);
+  }
+
   @Router.post("/groups")
-  async createGroup(session: SessionDoc, name: string, category: "community" | "roommate", capacity: string, privacy: string, location?: string)  {
+  async createGroup(session: SessionDoc, name: string, category: "community" | "roommate", capacity: string, privacy: string, location: string, moveIn?: string, moveOut?: string)  {
     const user = Sessioning.getUser(session);
-    const locationId = undefined;
-    if (location) {
-      const locationId = new ObjectId(location);
-      await Locating.assertLocationExists(locationId);
+    const locationId = new ObjectId(location)
+    await Locating.assertLocationExists(locationId);
+    let response;
+    if (moveIn && moveOut) {
+      response = await Grouping.create(name, category, user, capacity, privacy, locationId, new Date(moveIn), new Date(moveOut));
+    } else {
+      response = await Grouping.create(name, category, user, capacity, privacy, locationId);
     }
-    const response = await Grouping.create(name, category, user, capacity, privacy, locationId);
     await Authing.subscribeToGroup(user, response.group!._id);
     return response;
   }
@@ -213,9 +226,15 @@ class Routes {
    * LOCATIONS
    */
 
+  @Router.get("/locations/:id")
+  async getLocationById(id: string) {
+    const oid = new ObjectId(id);
+    return await Locating.getById(oid);
+  }
+
   @Router.get("/locations")
   @Router.validate(z.object({ city: z.string().optional(), state: z.string().optional() }))
-  async getLocations(city?: string,state?: string) {
+  async getLocations(city?: string, state?: string) {
     if (city && state) {
       return await Locating.getByCity(city, state);
     } else if (state) {
@@ -230,15 +249,21 @@ class Routes {
   @Router.validate(
     z.object({
       name: z.string().min(1),
-      street: z.string().min(1),
-      city: z.string().min(1),
-      state: z.string().min(1),
-      zipcode: z.string().min(1),
-      latitude: z.string().min(1),
-      longitude: z.string().min(1)
+      lat: z.number(),
+      lng: z.number(),
+      street: z.string().optional(),
+      street_number: z.string().optional(),
+      city: z.string().optional(),
+      state: z.string().optional(),
+      country: z.string().optional(),
+      postal_code: z.string().optional()
     }))
-  async createLocation(name: string, street: string, city: string, state: string, zipcode: string, latitude: string, longitude: string) {
-    return await Locating.create(name, street, city, state, zipcode, Number(latitude), Number(longitude));
+  async createLocation(name: string, lat: number, lng: number, street?: string, street_number?: string, city?: string, state?: string, country?: string, postal_code?: string) {
+    let formattedStreet = undefined;
+    if (street_number && street) {
+      formattedStreet = `${street_number} ${street}`;
+    }
+    return await Locating.create(name, lat, lng, formattedStreet, city, state, country, postal_code);
   }
 
   @Router.delete("/locations/:id")

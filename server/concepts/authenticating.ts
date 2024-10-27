@@ -3,10 +3,12 @@ import DocCollection, { BaseDoc } from "../framework/doc";
 import { BadValuesError, NotAllowedError, NotFoundError } from "./errors";
 
 export interface UserDoc extends BaseDoc {
-  // TODO: Add firstName, lastName
+  firstName: string;
+  lastName: string;
   username: string;
   password: string;
-  email: string
+  email: string;
+  bio: string;
   groups: ObjectId[];
 }
 

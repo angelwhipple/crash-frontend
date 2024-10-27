@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, defineProps, watch } from "vue";
+import { defineProps, computed } from "vue";
 import { useGroupStore } from "@/stores/group";
 import GroupComponent from "@/components/Group/GroupComponent.vue";
 import { storeToRefs } from "pinia";
@@ -14,8 +14,9 @@ const { allGroups } = storeToRefs(useGroupStore());
     <GroupComponent
       v-for="group in allGroups"
       :key="group._id.toString()"
-      :group-id="group._id.toString()"
-      :group-type="props.groupType" >
+      :group="group"
+      :group-type="props.groupType"
+      :is-info-window="false">
     </GroupComponent>
   </section>
 </template>

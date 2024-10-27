@@ -41,7 +41,7 @@ function cancelEdit() {
       <legend>Change your name</legend>
       <input type="text" placeholder="First name" v-model="firstName" required />
       <input type="text" placeholder="Last name" v-model="lastName" required />
-      <button type="submit" class="pure-button pure-button-primary">Update username</button>
+      <button type="submit" class="pure-button pure-button-primary">Update name</button>
     </fieldset>
   </form>
 

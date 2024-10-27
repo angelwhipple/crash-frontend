@@ -1,72 +1,61 @@
 <script setup lang="ts">
-import PostListComponent from "@/components/Post/PostListComponent.vue";
 import { useUserStore } from "@/stores/user";
 import { storeToRefs } from "pinia";
 import router from "@/router";
-import { ref, watch } from "vue";
+import { onBeforeMount } from "vue";
 import CreateGroupForm from "@/components/Group/CreateGroupForm.vue";
 import GroupListComponent from "@/components/Group/GroupListComponent.vue";
 import { useGroupStore } from "@/stores/group";
+import { useLocationStore } from "@/stores/locate";
 import MapComponent from "@/components/Locate/MapComponent.vue";
+import SearchComponent from "@/components/Locate/SearchComponent.vue";
+import { Loader } from "@googlemaps/js-api-loader"
 
-const EMPTY_COMMUNITY = { _id: null, name : 'No communities' };
+const { GMAPS_API_KEY } = useLocationStore();
+const loader = new Loader({
+  apiKey: GMAPS_API_KEY,
+  version: "weekly",
+  libraries: ["maps", "places", "marker", "geometry"],
+});
 
 const groupStore = useGroupStore();
+const locationStore = useLocationStore();
 const { isLoggedIn } = storeToRefs(useUserStore());
-const { subscribedGroups, isCreatingGroup, groupView } = storeToRefs(groupStore);
-
-const activeCommunity = ref(subscribedGroups.value.length > 0 ? subscribedGroups.value[0]._id.toString() : EMPTY_COMMUNITY);
-const mapActive = ref(false);
-
-const setCommunity = (id: string) => {
-  activeCommunity.value = id;
-}
-
-const toggleMap = (active: boolean) => {
-  mapActive.value = active;
-}
+const { isMapActive } = storeToRefs(locationStore);
+const { isCreatingGroup, groupView } = storeToRefs(groupStore);
 
 const navigate = () => {
   void router.push({ name: "Login" });
 }
 
-watch(activeCommunity, (active) => {
-  console.log('Set active community:', active);
-}, { deep: true });
-
+onBeforeMount(() => {
+  locationStore.setCurrentLocation();
+})
 </script>
 
 <template>
   <main>
     <CreateGroupForm
       v-if="isCreatingGroup && isLoggedIn"
-      @change-community="setCommunity"
-      :group-type="groupStore.groupView">
+      :group-type="groupStore.groupView"
+      :gmaps-loader="loader">
     </CreateGroupForm>
     <section v-if="isLoggedIn" class="vertical">
-      <section class="search-panel">
-        <div class="searchbar">
-          <label>
-            Who
-            <input placeholder="Search for communities..." />
-          </label>
-          <label>
-            Where
-            <input id="location-input" placeholder="Search by city, state, or zipcode..." type="text" />
-          </label>
-        </div>
-      </section>
-      <section class="results-panel">
-        <MapComponent v-if="mapActive"></MapComponent>
-        <Suspense v-else-if="groupView == 'community'" >
-          <GroupListComponent group-type="community"/>
+      <SearchComponent :gmaps-loader="loader"></SearchComponent>
+      <section class="content-panel">
+        <MapComponent v-if="isMapActive" :gmaps-loader="loader"></MapComponent>
+        <Suspense v-else >
+          <GroupListComponent :group-type="groupView"/>
           <template #fallback>
             <p class="centered">Content is being loaded...</p>
           </template>
         </Suspense>
-        <PostListComponent v-else></PostListComponent>
       </section>
-      <button @click="toggleMap(!mapActive)">{{ mapActive ? "Close map" : "Show map" }} </button>
+      <button @click="locationStore.toggleMap(!isMapActive)">
+        {{ isMapActive ? "Show list" : "Show map" }}
+        <v-icon v-if="isMapActive" name="fa-list" fill="white"></v-icon>
+        <v-icon v-else name="fa-map" fill="white"></v-icon>
+      </button>
     </section>
     <section v-else class="column">
       <h1>Login to view this content</h1>
@@ -80,57 +69,26 @@ h1 {
   text-align: center;
 }
 
-.search-panel {
-  width: 100%;
-  height: 25%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.results-panel {
+.content-panel {
   background-color: var(--light-gray);
   height: 75%;
 }
 
-.searchbar {
-  width: 50%;
-  height: fit-content;
-  display: flex;
-  border: 1px solid transparent;
-  border-radius: 5rem;
-  padding: 1rem;
-  box-shadow: 0px 0px 10px 2px rgba(0, 0, 0, 0.3);
-}
-
-.searchbar label {
-  width: 50%;
-}
-
-.searchbar input {
-  width: 70%;
-  border-radius: 2rem;
-  padding: 1rem;
-  border: transparent;
-  outline: none;
-}
-
-.searchbar input:focus, .searchbar input:hover {
-  background-color: var(--light-gray);
-  transition-duration: 0.3s;
-}
-
 button {
   position: absolute;
-  bottom: 1%;
+  bottom: 2%;
   left: 50%;
   transform: translateX(-50%);
-  padding: 0.5rem;
+  padding: 0.75rem;
   border: none;
-  border-radius: 1rem;
+  border-radius: 2rem;
   background-color: black;
   -webkit-text-fill-color: white;
   transition: transform 0.3s ease;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 button:hover {

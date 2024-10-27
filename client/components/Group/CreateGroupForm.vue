@@ -1,35 +1,53 @@
 <script setup lang="ts">
 import { useGroupStore } from "@/stores/group";
 import { useUserStore } from "@/stores/user";
-import { ref, defineProps, defineEmits } from "vue";
+import { useLocationStore } from "@/stores/locate";
+import { ref, defineProps, onBeforeMount } from "vue";
 
-const props = defineProps(["groupType"]);
-const emit = defineEmits(["changeCommunity"]);
-
+const props = defineProps(["groupType", "gmapsLoader"]);
 const groupStore = useGroupStore();
 const userStore = useUserStore();
+const locationStore = useLocationStore();
 
+const loader = ref(props.gmapsLoader);
 const name = ref("");
 const capacity = ref(0);
 const isPrivate = ref(false);
+const moveInDate = ref();
+const moveOutDate = ref();
 
 const cancelCreate = () => {
   groupStore.setIsCreatingGroup(false);
 };
 
 const handleCreate = async () => {
-  const response = await groupStore.createGroup(name.value, props.groupType, isPrivate.value.toString(), capacity.value);
+  const location = await locationStore.saveLocation("home");
+  await groupStore.createGroup(name.value, props.groupType, isPrivate.value.toString(), capacity.value, location._id, moveInDate.value, moveOutDate.value);
   await userStore.updateSession();
-  emit("changeCommunity", response.group._id);
   cancelCreate();
 }
+
+onBeforeMount(async () => {
+  loader
+    .value
+    .load()
+    //@ts-ignore
+    .then((google) => {
+      const auto = new google.maps.places.Autocomplete(
+        document.getElementById("create-location-input") as HTMLInputElement);
+      locationStore.setAutocomplete(auto, "create");
+    })
+    .catch((e) => {
+      console.error(`Failed to load Google Maps API: ${e}`);
+    });
+});
 </script>
 
 <template>
   <section class="modal centered">
     <section class="content">
-      <form>
-        <fieldset class="form-group" @submit.prevent="handleCreate">
+      <form @submit.prevent="handleCreate">
+        <fieldset class="form-group">
           <legend>New {{ groupType }} group</legend>
           <label for="group-name">Group name</label>
           <input v-model.trim="name" type="text" placeholder="Enter a name" required />
@@ -45,15 +63,28 @@ const handleCreate = async () => {
           <input v-model.trim="isPrivate" type="checkbox" />
         </fieldset>
 
-        <fieldset v-if="groupType == 'roommate'" class="form-group">
-          <label for="homeLocation">I am living...</label>
-          <input type="text" placeholder="Enter a location" />
-          <label for="workLocation">I am working from...</label>
-          <input type="text" placeholder="Enter a location" />
+        <fieldset class="form-group">
+          <label for="homeLocation">
+            {{ groupType == 'roommate' ? "Where I'm living: " : "Location: " }}
+            <input id="create-location-input" type="text" placeholder="Enter a location" required />
+          </label>
         </fieldset>
 
-        <button class="pure-button pure-button-primary" @click="cancelCreate()">Cancel</button>
-        <button type="submit" class="pure-button pure-button-primary">Create</button>
+        <fieldset v-if="groupType == 'roommate'" class="form-group">
+          <label for="moveOutDate">
+            Movein:
+            <input v-model.trim="moveInDate" id="movein-date-input" type="date" required/>
+          </label>
+          <label for="moveInDate">
+            Moveout:
+            <input v-model.trim="moveOutDate" id="moveout-date-input" type="date" required >
+          </label>
+        </fieldset>
+
+        <fieldset class="pure-control-group" style="justify-content: space-evenly; display: flex;">
+          <button class="pure-button pure-button-primary" @click="cancelCreate()">Cancel</button>
+          <button type="submit" class="pure-button pure-button-primary">Create</button>
+        </fieldset>
       </form>
     </section>
   </section>

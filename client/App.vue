@@ -19,6 +19,7 @@ onBeforeMount(async () => {
   try {
     await userStore.updateSession();
     await groupStore.refreshAllGroups();
+    await groupStore.filterGroups();
   } catch {
     // User is not logged in
   }

@@ -4,12 +4,13 @@ import { BadValuesError, NotAllowedError, NotFoundError } from "./errors";
 
 export interface LocationDoc extends BaseDoc {
   name: string;
-  street: string;
-  city: string;
-  state: string;
-  zipcode: string;
-  latitude: number;
-  longitude: number;
+  lat: number;
+  lng: number;
+  street?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  postal_code?: string;
 }
 
 /**
@@ -22,17 +23,21 @@ export default class LocatingConcept {
     this.locations = new DocCollection<LocationDoc>(collectionName);
   }
 
-  async create(name: string, street: string, city: string, state: string, zipcode: string, latitude: number, longitude: number) {
-    const _id = await this.locations.createOne({ name, street, city, state, zipcode, latitude, longitude });
-    return { msg: `New location ${name} geo-tagged at (${latitude}, ${longitude})`, location: await this.locations.readOne({ _id }) };
+  async create(name: string, lat: number, lng: number, street?: string, city?: string, state?: string, country?: string, postal_code?: string) {
+    const _id = await this.locations.createOne({ name, street, city, state, country, postal_code, lat, lng });
+    return await this.locations.readOne({ _id });
   }
 
   async getLocations() {
     return await this.locations.readMany({}, { sort: { _id: -1 } });
   }
 
+  async getById(_id: ObjectId) {
+    return { msg: `Fetched location`, location: await this.locations.readOne({ _id }) };
+  }
+
   async getByName(name: string) {
-    return await this.locations.readOne({ name });
+    return await this.locations.readMany({ name });
   }
 
   async getByState(state: string) {
@@ -43,8 +48,8 @@ export default class LocatingConcept {
     return await this.locations.readMany({ city, state });
   }
 
-  async getByZipcode(zipcode: string){
-    return await this.locations.readMany({ zipcode });
+  async getByPostalCode(postal_code: string){
+    return await this.locations.readMany({ postal_code });
   }
 
   async delete(_id: ObjectId) {
