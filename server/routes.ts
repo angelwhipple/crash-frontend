@@ -8,7 +8,8 @@ import { SessionDoc } from "./concepts/sessioning";
 import Responses from "./responses";
 
 import { z } from "zod";
-import session from "express-session";
+import { LocationDoc } from "./concepts/locating";
+import { GroupDoc } from "./concepts/grouping";
 
 /**
  * Web server routes for the app. Implements synchronizations between concepts.
@@ -164,7 +165,23 @@ class Routes {
 
   @Router.get("/groups/query/:name")
   async getGroupsByName(name: string) {
-    return Grouping.getGroupsByName(name);
+    return await Grouping.getGroupsByName(name);
+  }
+
+  @Router.get("/groups/:name/:city/:state/:country/:postal_code")
+  async searchGroups(name: string, city?: string, state?: string, country?: string, postal_code?: string, ) {
+    const results: GroupDoc[] = [];
+    const groups = await Grouping.getGroupsByName(name);
+    const locations = await Promise.all(groups.map(async (g) => {
+      await Locating.assertLocationExists(g.location);
+      return await Locating.getById(g.location);
+    }));
+    locations.forEach((location: LocationDoc, index: number) => {
+      if (location.city == city || location.state == state || location.country == country || location.postal_code == postal_code)  {
+        results.push(groups[index]);
+      }
+    })
+    return results;
   }
 
   @Router.get("/groups/roommates/:groupId")

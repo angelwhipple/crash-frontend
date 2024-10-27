@@ -33,7 +33,7 @@ export default class LocatingConcept {
   }
 
   async getById(_id: ObjectId) {
-    return { msg: `Fetched location`, location: await this.locations.readOne({ _id }) };
+    return await this.assertLocationExists(_id);
   }
 
   async getByName(name: string) {
@@ -62,5 +62,6 @@ export default class LocatingConcept {
     if (!location) {
       throw new NotFoundError(`Location with id ${_id} does not exist!`);
     }
+    return location
   }
 }

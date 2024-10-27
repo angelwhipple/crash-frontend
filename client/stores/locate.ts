@@ -62,10 +62,10 @@ export const useLocationStore = defineStore(
     async function refreshMarkers() {
       markers.value = await Promise.all(
         filteredGroups.value.map(async (group) => {
-          let response = await fetchLocation(group.location.toString());
+          let location = await fetchLocation(group.location.toString());
           const marker = new google.maps.Marker({
             map: map.value,
-            position: { lat: response.location.lat, lng: response.location.lng },
+            position: { lat: location.lat, lng: location.lng },
             optimized: true,
             title: group._id.toString()
           });

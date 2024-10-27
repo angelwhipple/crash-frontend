@@ -66,8 +66,7 @@ const refreshRequests = async () => {
 }
 
 const refreshLocation = async () => {
-  const response = await locationStore.fetchLocation(group.value.location)
-  location.value = response.location;
+  location.value = await locationStore.fetchLocation(group.value.location);
 }
 
 const refreshLivingOptions = async () => {

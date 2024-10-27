@@ -13,7 +13,9 @@ const moveInDate = ref();
 const moveOutDate = ref();
 
 async function search() {
-  if (assertLocationNonempty()) {
+  if (!locationStore.isMapActive && searchName.value) {
+    await groupStore.searchGroupsByName(searchName.value);
+  } else if (assertLocationNonempty()) {
     const searchFilter = {
       name: searchName.value,
       meterRadius: locationStore.meterRadius,
@@ -22,6 +24,8 @@ async function search() {
     }
     groupStore.setGroupFilter(searchFilter);
     locationStore.centerMap();
+  } else {
+    await groupStore.refreshAllGroups();
   }
 }
 

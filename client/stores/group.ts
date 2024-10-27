@@ -48,9 +48,9 @@ export const useGroupStore = defineStore(
 
         const inRangeGroups = await Promise.all(
           matches.map(async (group) => {
-            let response = await locationStore.fetchLocation(group.location.toString());
+            let location = await locationStore.fetchLocation(group.location.toString());
             let from = new google.maps.LatLng(groupFilter.value!.lat, groupFilter.value!.lng);
-            let to = new google.maps.LatLng(response.location.lat, response.location.lng);
+            let to = new google.maps.LatLng(location.lat, location.lng);
             if (inRange(from, to, groupFilter.value!.meterRadius)) {
               return group;
             } else return null;
@@ -60,6 +60,11 @@ export const useGroupStore = defineStore(
       } else {
         filteredGroups.value = allGroups.value;
       }
+    }
+
+    const searchGroupsByName = async (name: string) => {
+      let groups: GroupDoc[] = await fetchy(`/api/groups/query/${name}`, "GET", { alert: false });
+      allGroups.value = groups.filter((group) => group.category === groupView.value);
     }
 
     const setGroupView = async (view: string) => {
@@ -113,6 +118,7 @@ export const useGroupStore = defineStore(
       groupView,
       isCreatingGroup,
       refreshAllGroups,
+      searchGroupsByName,
       filterGroups,
       loadGroup,
       loadLivingOptions,
