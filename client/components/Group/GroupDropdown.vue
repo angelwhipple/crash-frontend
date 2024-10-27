@@ -7,7 +7,6 @@ const props = defineProps(["groupType", "activeCommunity"]);
 const emit = defineEmits(["changeCommunity"])
 
 const groupStore = useGroupStore();
-const { subscribedGroups } = storeToRefs(groupStore);
 
 const handleSelect = (event: any) => {
   emit("changeCommunity", event.target.options[event.target.selectedIndex].id);
@@ -15,12 +14,7 @@ const handleSelect = (event: any) => {
 </script>
 
 <template>
-  <select @change="handleSelect">
-    <option
-      :id="group._id.toString()"
-      v-for="group in subscribedGroups"
-      :selected="props.activeCommunity === group._id">{{group.name}}</option>
-  </select>
+  <select @change="handleSelect"></select>
 </template>
 
 <style scoped>

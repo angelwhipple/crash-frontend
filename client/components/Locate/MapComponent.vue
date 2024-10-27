@@ -28,7 +28,7 @@ onBeforeMount(async () => {
       const map = new google.maps.Map(document.getElementById("map") as HTMLElement, mapOptions);
       locationStore.initMap(map);
     })
-    .catch((e) => {
+    .catch((e: any) => {
       console.error(`Failed to load Google Maps API: ${e}`);
     });
 });

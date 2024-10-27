@@ -37,7 +37,7 @@ onBeforeMount(async () => {
         document.getElementById("create-location-input") as HTMLInputElement);
       locationStore.setAutocomplete(auto, "create");
     })
-    .catch((e) => {
+    .catch((e: any) => {
       console.error(`Failed to load Google Maps API: ${e}`);
     });
 });
