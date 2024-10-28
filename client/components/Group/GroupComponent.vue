@@ -98,11 +98,13 @@ onBeforeMount(async () => {
       <p class="opaque text-sm">
         Open since {{ dateFromString(group.dateCreated).toLocaleDateString() }}
       </p>
-      <button v-if="isOwner" @click="disband()" class="text-sm">Disband</button>
-      <button v-else-if="isMember" class="text-sm" @click="leave()">Leave</button>
-      <button v-else-if="group.privacy && isPendingRequest" class="text-sm" @click="withdrawRequest()">Unrequest</button>
-      <button v-else-if="group.privacy && !isPendingRequest" class="text-sm" @click="request()">Request</button>
-      <button v-else @click="join()" class="text-sm">Join</button>
+      <span v-if="userStore.isLoggedIn">
+        <button v-if="isOwner" @click="disband()" class="text-sm">Disband</button>
+        <button v-else-if="isMember" class="text-sm" @click="leave()">Leave</button>
+        <button v-else-if="group.privacy && isPendingRequest" class="text-sm" @click="withdrawRequest()">Unrequest</button>
+        <button v-else-if="group.privacy && !isPendingRequest" class="text-sm" @click="request()">Request</button>
+        <button v-else @click="join()" class="text-sm">Join</button>
+      </span>
     </section>
   </div>
 </template>
