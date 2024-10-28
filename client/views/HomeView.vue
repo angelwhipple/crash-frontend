@@ -40,7 +40,7 @@ onBeforeMount(() => {
       :group-type="groupStore.groupView"
       :gmaps-loader="loader">
     </CreateGroupForm>
-    <section v-if="isLoggedIn" class="vertical">
+    <section class="vertical">
       <SearchComponent :gmaps-loader="loader"></SearchComponent>
       <section class="content-panel">
         <MapComponent v-if="isMapActive" :gmaps-loader="loader"></MapComponent>
@@ -56,10 +56,6 @@ onBeforeMount(() => {
         <v-icon v-if="isMapActive" name="fa-list" fill="white"></v-icon>
         <v-icon v-else name="fa-map" fill="white"></v-icon>
       </button>
-    </section>
-    <section v-else class="column">
-      <h1>Login to view this content</h1>
-      <button @click="navigate">Login</button>
     </section>
   </main>
 </template>
