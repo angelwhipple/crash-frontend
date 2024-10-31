@@ -168,20 +168,11 @@ class Routes {
     return await Grouping.getGroupsByName(name);
   }
 
-  @Router.get("/groups/:name/:city/:state/:country/:postal_code")
-  async searchGroups(name: string, city?: string, state?: string, country?: string, postal_code?: string, ) {
-    const results: GroupDoc[] = [];
-    const groups = await Grouping.getGroupsByName(name);
-    const locations = await Promise.all(groups.map(async (g) => {
-      await Locating.assertLocationExists(g.location);
-      return await Locating.getById(g.location);
-    }));
-    locations.forEach((location: LocationDoc, index: number) => {
-      if (location.city == city || location.state == state || location.country == country || location.postal_code == postal_code)  {
-        results.push(groups[index]);
-      }
-    })
-    return results;
+  @Router.get("/groups/filter/:category/:name")
+  async filterGroups(category: "community" | "roommate", name?: string) {
+    let matches: GroupDoc[] = name !== "undefined" ? await Grouping.getGroupsByName(name!) : await Grouping.getAllGroups();
+    matches = matches.filter((group) => group.category == category)
+    return matches;
   }
 
   @Router.get("/groups/roommates/:groupId")
@@ -249,19 +240,6 @@ class Routes {
     return await Locating.getById(oid);
   }
 
-  @Router.get("/locations")
-  @Router.validate(z.object({ city: z.string().optional(), state: z.string().optional() }))
-  async getLocations(city?: string, state?: string) {
-    if (city && state) {
-      return await Locating.getByCity(city, state);
-    } else if (state) {
-      return await Locating.getByState(state);
-    } else if (city) {
-      return await Locating.getByState(city);
-    }
-    return await Locating.getLocations();
-  }
-
   @Router.post("/locations")
   @Router.validate(
     z.object({
@@ -274,7 +252,8 @@ class Routes {
       state: z.string().optional(),
       country: z.string().optional(),
       postal_code: z.string().optional()
-    }))
+    })
+  )
   async createLocation(name: string, lat: number, lng: number, street?: string, street_number?: string, city?: string, state?: string, country?: string, postal_code?: string) {
     let formattedStreet = undefined;
     if (street_number && street) {

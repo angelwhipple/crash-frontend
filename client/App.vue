@@ -12,14 +12,14 @@ const userStore = useUserStore();
 const groupStore = useGroupStore();
 const { isLoggedIn } = storeToRefs(userStore);
 const { toast } = storeToRefs(useToastStore());
-const { groupView } = storeToRefs(groupStore);
+const { groupCategory } = storeToRefs(groupStore);
 
 // Make sure to update the session before mounting the app in case the user is already logged in
 onBeforeMount(async () => {
   try {
     await userStore.updateSession();
     await groupStore.refreshAllGroups();
-    await groupStore.filterGroups();
+    await groupStore.filterGroups(false);
   } catch {
     // User is not logged in
   }
@@ -35,14 +35,14 @@ onBeforeMount(async () => {
       <ul v-if="currentRouteName == 'Home'" class="center-toggle">
         <li
           title="Communities"
-          :class="{ active: groupView == 'community' }"
-          @click="groupStore.setGroupView('community')">
+          :class="{ active: groupCategory == 'community' }"
+          @click="groupStore.setGroupCategory('community')">
           <v-icon name="io-people-sharp" fill="var(--primary)" scale="1.25"></v-icon>
         </li>
         <li
           title="Roommates"
-          :class="{ active: groupView == 'roommate' }"
-          @click="groupStore.setGroupView('roommate')">
+          :class="{ active: groupCategory == 'roommate' }"
+          @click="groupStore.setGroupCategory('roommate')">
             <v-icon name="fa-house-user" fill="var(--primary)" scale="1.25"></v-icon>
         </li>
       </ul>
@@ -50,7 +50,7 @@ onBeforeMount(async () => {
         <li
           v-if="currentRouteName == 'Home'"
           @click="groupStore.setIsCreatingGroup(true)">
-          <span v-if="groupView == 'community'">Create a community</span>
+          <span v-if="groupCategory == 'community'">Create a community</span>
           <span v-else>Create a roommate group</span>
         </li>
         <li :class="{ active: currentRouteName == 'Profile' }" title="Profile">

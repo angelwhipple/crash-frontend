@@ -5,12 +5,12 @@ import { useLocationStore } from "@/stores/locate";
 
 const props = defineProps(["gmapsLoader"]);
 const locationStore = useLocationStore();
-const { currentLocation } = storeToRefs(locationStore);
+const { currentLocation, MIT } = storeToRefs(locationStore);
 
 const loader = ref(props.gmapsLoader);
 
 const mapOptions = {
-  center: currentLocation.value,
+  center: MIT,
   zoom: 16,
   disableDefaultUI: true,
   zoomControl: true,

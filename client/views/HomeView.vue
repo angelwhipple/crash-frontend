@@ -22,7 +22,7 @@ const groupStore = useGroupStore();
 const locationStore = useLocationStore();
 const { isLoggedIn } = storeToRefs(useUserStore());
 const { isMapActive } = storeToRefs(locationStore);
-const { isCreatingGroup, groupView } = storeToRefs(groupStore);
+const { isCreatingGroup, groupCategory } = storeToRefs(groupStore);
 
 const navigate = () => {
   void router.push({ name: "Login" });
@@ -37,7 +37,7 @@ onBeforeMount(() => {
   <main>
     <CreateGroupForm
       v-if="isCreatingGroup && isLoggedIn"
-      :group-type="groupStore.groupView"
+      :group-type="groupStore.groupCategory"
       :gmaps-loader="loader">
     </CreateGroupForm>
     <section class="vertical">
@@ -45,7 +45,7 @@ onBeforeMount(() => {
       <section class="content-panel">
         <MapComponent v-if="isMapActive" :gmaps-loader="loader"></MapComponent>
         <Suspense v-else >
-          <GroupListComponent :group-type="groupView"/>
+          <GroupListComponent :group-type="groupCategory"/>
           <template #fallback>
             <p class="centered">Content is being loaded...</p>
           </template>

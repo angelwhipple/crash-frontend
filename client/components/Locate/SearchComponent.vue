@@ -2,6 +2,7 @@
 import { ref, defineProps, onBeforeMount, markRaw } from "vue";
 import { useLocationStore } from "@/stores/locate";
 import { useGroupStore } from "@/stores/group";
+import { buildQuery } from "@/utils/locator"
 
 const props = defineProps(["gmapsLoader"])
 const locationStore = useLocationStore();
@@ -11,21 +12,20 @@ const loader = ref(props.gmapsLoader);
 const searchName = ref("");
 const moveInDate = ref();
 const moveOutDate = ref();
+// TODO: add slider for search radius
 
 async function search() {
-  if (!locationStore.isMapActive && searchName.value) {
-    await groupStore.searchGroupsByName(searchName.value);
-  } else if (assertLocationNonempty()) {
-    const searchFilter = {
-      name: searchName.value,
-      meterRadius: locationStore.meterRadius,
-      lat: locationStore.placeSearch!.geometry!.location!.lat(),
-      lng: locationStore.placeSearch!.geometry!.location!.lng()
-    }
-    groupStore.setGroupFilter(searchFilter);
+  const query = assertLocationNonempty() ? buildQuery(locationStore!.placeSearch!) : {};
+  const searchFilter = {
+    category: groupStore.groupCategory,
+    name: searchName.value || undefined,
+    city: query.city,
+    state: query.state,
+    postal_code: query.postal_code,
+  }
+  groupStore.setSearchFilter(searchFilter);
+  if (locationStore.isMapActive && assertLocationNonempty()) {
     locationStore.centerMap();
-  } else {
-    await groupStore.refreshAllGroups();
   }
 }
 
@@ -51,7 +51,7 @@ onBeforeMount(() => {
 <template>
 <section class="search-panel">
   <div class="searchbar">
-    <label v-if="groupStore.groupView == 'community'">
+    <label v-if="groupStore.groupCategory == 'community'">
       Who
       <input v-model.trim="searchName" id="search-name-input" placeholder="Search communities..."/>
     </label>

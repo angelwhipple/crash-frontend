@@ -6,13 +6,13 @@ import { storeToRefs } from "pinia";
 
 const props = defineProps(["groupType"]);
 
-const { allGroups } = storeToRefs(useGroupStore());
+const { allGroups, filteredGroups } = storeToRefs(useGroupStore()); // TODO: revise, use filteredGroups
 </script>
 
 <template>
   <section class="scrollable">
     <GroupComponent
-      v-for="group in allGroups"
+      v-for="group in filteredGroups"
       :key="group._id.toString()"
       :group="group"
       :group-type="props.groupType"

@@ -95,6 +95,10 @@ export default class GroupingConcept {
     return await this.groups.readMany({ name: { $regex: name, $options: "i" } });
   }
 
+  async getGroupsByCategory(category: "community" | "roommate") {
+    return await this.groups.readMany({ category });
+  }
+
   async getOwner(_id: ObjectId) {
     const group = await this.assertGroupExists(_id);
     return group.owner;

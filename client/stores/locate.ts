@@ -41,17 +41,16 @@ export const useLocationStore = defineStore(
     }
 
     async function initMap(googleMap: google.maps.Map) {
-      googleMap.addListener("zoom_changed", () => {
-        meterRadius.value = computeRadiusFromBounds(googleMap);
-        let center = googleMap.getCenter()!;
-        groupStore.setGroupFilter({
-          lat: center.lat(),
-          lng: center.lng(),
-          meterRadius: meterRadius.value
-        })
-      })
+      // googleMap.addListener("zoom_changed", () => {
+      //   meterRadius.value = computeRadiusFromBounds(googleMap);
+      //   let center = googleMap.getCenter()!;
+      //   groupStore.setGroupFilter({
+      //     lat: center.lat(),
+      //     lng: center.lng(),
+      //     meterRadius: meterRadius.value
+      //   })
+      // })
       map.value = googleMap;
-      await refreshMarkers();
     }
 
     function clearMarkers() {
@@ -119,11 +118,14 @@ export const useLocationStore = defineStore(
     }
 
     watch(filteredGroups, async () => {
-      clearMarkers();
-      await refreshMarkers();
+      if (isMapActive.value) {
+        clearMarkers();
+        await refreshMarkers();
+      }
     })
 
     return {
+      MIT,
       GMAPS_API_KEY,
       currentLocation,
       map,
