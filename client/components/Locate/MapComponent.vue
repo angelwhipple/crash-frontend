@@ -10,7 +10,7 @@ const { currentLocation, MIT } = storeToRefs(locationStore);
 const loader = ref(props.gmapsLoader);
 
 const mapOptions = {
-  center: MIT,
+  center: locationStore.MIT,
   zoom: 16,
   disableDefaultUI: true,
   zoomControl: true,
