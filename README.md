@@ -2,31 +2,7 @@
 
 ## Getting Started
 
-If you are using VSCode/VSCodium, install the ESLint and Prettier extensions.
-The project is already configured to use ESLint and Prettier,
-but feel free to add your own rules if you want.
-Right now, the code is formatted on save; you can change this in `.vscode/settings.json`
-by disabling `editor.formatOnSave`.
-
-As well, you can install [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) extensions.
-
 Run `npm install` to install dependencies.
-
-## Creating MongoDB Atlas Instance
-You should already have created a MongoDB Atlas Instance for the backend implementation.
-
-Copy your `.env` file from your backend code into the root directory of this project. As a reminder:
-
-To run the server, you need to create a MongoDB Atlas instance and connect your project. Feel free to follow the instructions below or use these [slides](https://docs.google.com/presentation/d/1HJ4Lz1a2IH5oKu21fQGYgs8G2irtMqnVI9vWDheGfKM/edit?usp=sharing).
-1. Create your [MongoDB Atlas](https://www.mongodb.com/cloud/atlas/register) account.
-2. When selecting a template, choose the __free__ option, M0.
-4. At the Security Quickstart page, select how you want to authenticate your connection and keep the rest of the defaults. Make sure to allow access to all IPs as shown in [this slide](https://docs.google.com/presentation/d/1HJ4Lz1a2IH5oKu21fQGYgs8G2irtMqnVI9vWDheGfKM/edit#slide=id.g167b96ecbf8_0_0).
-5. Once created, click the __CONNECT__ button, select __driver__, and copy the srv connection string. If using username and password, the url should look something like this: `mongodb+srv://<username>:<password>@cluster0.p82ijqd.mongodb.net/?retryWrites=true&w=majority`. Make sure to replace username and password with your actual values.
-6. Now go to your project files and create a new file at the root directory called `.env` (don't forget the 'dot' at the front). Add the line (without `<` and `>`)
-    ```
-    MONGO_SRV=<connection url>
-    ```
-    to the `.env` file. 
 
 ## Running Locally
 Using two seperate, dedicated terminals:

@@ -17,7 +17,7 @@ export const useLocationStore = defineStore(
 
     const currentLocation = ref();
     const map = ref<google.maps.Map>();
-    const isMapActive = ref(false);
+    const isMapActive = ref(true);
     const placeSearch = ref<google.maps.places.PlaceResult>();
     const placeCreate = ref<google.maps.places.PlaceResult>();
     const meterRadius = ref(); // 1 mi = 1609.34 meters
